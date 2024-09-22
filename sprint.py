@@ -2,6 +2,8 @@ import requests
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
+import json
+import os
 from os import system, name
 from time import sleep
 
@@ -21,45 +23,54 @@ def sair():
     """Limpa o terminal, exibe mensagem e encerra o programa"""
     limpar_tela()
     print(f"{VERDE}Sistema finalizado. Tenha um bom dia!{LIMPAR}")
-    return  
+    return
 
-def obter_numero_voltas(lastN):
-    """Obtém os dados diretamente da API usando uma requisição GET"""
-    url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
-
+def obter_dados_vm(url):
+    """Tenta obter dados da VM. Retorna os dados ou None em caso de falha."""
     headers = {
         'fiware-service': 'smart',
         'fiware-servicepath': '/'
     }
-
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
         data = response.json()
-        lap_data = data['contextResponses'][0]['contextElement']['attributes'][0]['values']
-        return lap_data
+        return data
     except requests.RequestException as e:
-        print(f"Erro ao obter dados: {e}")
-        return []
+        print(f"Erro ao obter dados da VM: {e}")
+        return None
 
-def obter_horario_da_volta(lastN):
-    """Obtém os dados de horário de uma volta"""
-    url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/time?lastN={lastN}"
+def carregar_dados_locais(json_interno):
+    """Carrega os dados salvos localmente do JSON interno."""
+    if os.path.exists(json_interno):
+        with open(json_interno, 'r', encoding='utf-8') as file:
+            return json.load(file)
+    else:
+        print(f"Arquivo {json_interno} não encontrado.")
+        return None
 
-    headers = {
-        'fiware-service': 'smart',
-        'fiware-servicepath': '/'
-    }
+def salvar_dados_locais(json_interno, dados):
+    """Salva os dados recebidos da VM no JSON interno."""
+    with open(json_interno, 'w', encoding='utf-8') as file:
+        json.dump(dados, file, indent=4)
 
-    try:
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-        data = response.json()
-        time_data = data['contextResponses'][0]['contextElement']['attributes'][0]['values']
-        return time_data
-    except requests.RequestException as e:
-        print(f"Erro ao obter dados: {e}")
-        return []
+def obter_dados(lastN, tipo_dado):
+    """Obtém dados da VM ou JSON local"""
+    if tipo_dado == 'voltas':
+        url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
+        json_interno = 'dados.json'
+    else:
+        url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/time?lastN={lastN}"
+        json_interno = 'dados.json'
+
+    dados_vm = obter_dados_vm(url)
+    if dados_vm:
+        print("Dados obtidos da VM com sucesso.")
+        salvar_dados_locais(json_interno, dados_vm)
+        return dados_vm
+    else:
+        print("Usando dados locais.")
+        return carregar_dados_locais(json_interno)
 
 def plotar_grafico_horario(voltas_horario):
     """Gera gráfico de horário (horas:minutos:segundos:milissegundos)"""
@@ -101,22 +112,18 @@ def plotar_grafico_milisegundos(voltas_milisegundos):
         print("Nenhum dado disponível para plotar.")
         return
 
-    # Acessando os valores do JSON corretamente
     voltas = [entry['attrValue'][0] for entry in voltas_milisegundos]
     tempos = [entry['attrValue'][1] for entry in voltas_milisegundos]
     media_ = sum(tempos) / len(tempos)  # Calculando a média dos tempos
 
-    # Criando o gráfico
     plt.figure(figsize=(12, 6))
     plt.plot(voltas, tempos, marker='o', linestyle='-', color='r', label="Tempo por volta")
     plt.axhline(y=media_, color='b', linestyle='--', label="Média")
 
-    # Adicionando os valores dos tempos (convertidos) acima de cada ponto
     for i, tempo in enumerate(tempos):
-        tempo_formatado = converter_tempo(tempo)  # Converte o tempo
+        tempo_formatado = converter_tempo(tempo)
         plt.text(voltas[i], tempo + 100, tempo_formatado, ha='center', va='bottom', fontsize=9)
 
-    # Configurando o gráfico
     plt.xticks(voltas)
     plt.title('Gráfico de Tempo por Volta')
     plt.xlabel('Número de Voltas')
@@ -125,8 +132,6 @@ def plotar_grafico_milisegundos(voltas_milisegundos):
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-
 
 def selecionar():
     """Seleciona a opção que o usuário deseja realizar"""
@@ -147,11 +152,11 @@ def selecionar():
     lastN = quantidade_de_dados()
 
     if opcao == 1:
-        horario_voltas = obter_horario_da_volta(lastN)
-        plotar_grafico_horario(horario_voltas)
+        horario_voltas = obter_dados(lastN, 'horarios')
+        plotar_grafico_horario(horario_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 2:
-        tempo_voltas = obter_numero_voltas(lastN)
-        plotar_grafico_milisegundos(tempo_voltas)
+        tempo_voltas = obter_dados(lastN, 'voltas')
+        plotar_grafico_milisegundos(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 3:
         sair()
 
