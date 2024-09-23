@@ -271,29 +271,36 @@ def selecionar():
     if opcao == 1:
         lastN = quantidade_de_dados()
         horario_voltas = obter_dados(lastN)
+        limpar_tela()
         plotar_grafico_horario(horario_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 2:
         lastN = quantidade_de_dados()
         tempo_voltas = obter_dados(lastN)
+        limpar_tela()
         plotar_grafico_milisegundos(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 3:
         lastN = quantidade_de_dados()
         pista = tamanho_pista()
         tempo_voltas = obter_dados(lastN)
+        limpar_tela()
         plotar_grafico_velocidade_media(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'], pista)
     elif opcao == 4:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        limpar_tela()
         mostrar_volta_mais_rapida(voltas_milisegundos)
     elif opcao == 5:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        limpar_tela()
         mostrar_volta_mais_lenta(voltas_milisegundos)
     elif opcao == 6:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
         tamanho = tamanho_pista()
+        limpar_tela()
         mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho)
     elif opcao == 7:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
         tamanho = tamanho_pista()
+        limpar_tela()
         mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho)
     elif opcao == 8:
         while True:
@@ -301,6 +308,7 @@ def selecionar():
                 voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
                 tamanho = tamanho_pista()
                 volta_especifica = int(input("Digite o número da volta específica: "))
+                limpar_tela()
                 mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica)
                 break
             except ValueError:
