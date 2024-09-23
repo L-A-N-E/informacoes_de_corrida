@@ -1,11 +1,13 @@
-import requests
+# Importando as bibliotecas necessárias
+import json
+from scipy.interpolate import make_interp_spline
+import numpy as np
+from os import system, name
+from time import sleep
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
-import json
-import os
-from os import system, name
-from time import sleep
+import requests
 
 # Definindo variáveis de cores e formatação de texto
 LIMPAR = "\033[m"
@@ -57,10 +59,10 @@ def salvar_dados_locais(json_interno, dados):
 def obter_dados(lastN, tipo_dado):
     """Obtém dados da VM ou JSON local"""
     if tipo_dado == 'voltas':
-        url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
+        url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
         json_interno = 'dados.json'
     else:
-        url = f"http://4.228.216.201:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/time?lastN={lastN}"
+        url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
         json_interno = 'dados.json'
 
     dados_vm = obter_dados_vm(url)
@@ -73,7 +75,7 @@ def obter_dados(lastN, tipo_dado):
         return carregar_dados_locais(json_interno)
 
 def plotar_grafico_horario(voltas_horario):
-    """Gera gráfico de horário (horas:minutos:segundos:milissegundos)"""
+    """Gera gráfico de horário (horas:minutos:segundos:milissegundos) com curva suavizada"""
     if not voltas_horario:
         print("Nenhum dado disponível para plotar.")
         return
@@ -81,18 +83,38 @@ def plotar_grafico_horario(voltas_horario):
     voltas = list(range(1, len(voltas_horario) + 1))
     tempos = [datetime.strptime(entry['recvTime'], "%Y-%m-%dT%H:%M:%S.%fZ") for entry in voltas_horario]
 
+    # Convertendo os tempos em segundos (ou qualquer unidade contínua) para suavização
+    tempos_segundos = [(tempo - tempos[0]).total_seconds() for tempo in tempos]
+
+    # Gerando uma curva suavizada com Spline
+    voltas_smooth = np.linspace(min(voltas), max(voltas), 300)  # Valores interpolados para suavização
+    spline = make_interp_spline(voltas, tempos_segundos, k=3)  # Interpolação spline cúbica
+    tempos_smooth = spline(voltas_smooth)
+
+    # Criando o gráfico
     plt.figure(figsize=(12, 6))
-    plt.plot(voltas, tempos, marker='o', linestyle='-', color='r')
+    plt.plot(voltas, tempos, marker='o', linestyle='-', color='r', label="Horário por volta")
 
-    plt.gca().yaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S.%f'))
+    # Adicionando a linha azul suavizada
+    tempos_smooth_datetime = [tempos[0] + timedelta(seconds=seg) for seg in tempos_smooth]  # Convertendo de volta para datetime
+    plt.plot(voltas_smooth, tempos_smooth_datetime, color='b', linestyle='-', label="Curva de função média em relação ao tempo")
 
+    # Adicionando os valores dos horários diretamente no gráfico
+    for i, tempo in enumerate(tempos):
+        tempo_formatado = tempo.strftime('%H:%M:%S.%f')[:-3]  # Formatando para horas:minutos:segundos:milissegundos
+        plt.text(voltas[i], tempo + timedelta(seconds=0.1), tempo_formatado, ha='center', va='bottom', fontsize=9)  # Ajuste de posição
+
+    # Configurações do gráfico
+    plt.gca().yaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
     plt.xticks(voltas)
-    plt.title('Gráfico de Horário em Função das Voltas')
+    plt.title('Gráfico de Horário em Função das Voltas com Curva Suavizada')
     plt.xlabel('Número de Voltas')
     plt.ylabel('Horário (Horas:Minutos:Segundos:Milissegundos)')
     plt.grid(True)
+    plt.legend()
     plt.tight_layout()
     plt.show()
+
 
 def converter_tempo(tempo_ms):
     """Converte milissegundos para minutos, segundos e milissegundos se necessário"""
@@ -149,12 +171,12 @@ def selecionar():
             sleep(1.5)
             limpar_tela()
 
-    lastN = quantidade_de_dados()
-
     if opcao == 1:
+        lastN = quantidade_de_dados()
         horario_voltas = obter_dados(lastN, 'horarios')
         plotar_grafico_horario(horario_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 2:
+        lastN = quantidade_de_dados()
         tempo_voltas = obter_dados(lastN, 'voltas')
         plotar_grafico_milisegundos(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 3:
