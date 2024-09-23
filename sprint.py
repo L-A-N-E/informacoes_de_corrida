@@ -1,13 +1,13 @@
 # Importando as bibliotecas necessárias
 import json
-from scipy.interpolate import make_interp_spline
-import numpy as np
-from os import system, name
+import os
 from time import sleep
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
+import numpy as np
+import matplotlib.pyplot as plt
 import requests
+from scipy.interpolate import make_interp_spline
 
 # Definindo variáveis de cores e formatação de texto
 LIMPAR = "\033[m"
@@ -19,13 +19,28 @@ NEGRITO = "\033[1m"
 
 def limpar_tela():
     """Limpa o terminal, seja no Windows ou Unix"""
-    system('cls' if name == 'nt' else 'clear')
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def sair():
     """Limpa o terminal, exibe mensagem e encerra o programa"""
     limpar_tela()
     print(f"{VERDE}Sistema finalizado. Tenha um bom dia!{LIMPAR}")
-    return
+    exit()
+
+def tamanho_pista():
+    """Usuário insere o tamanho da pista para o cálculo de média da velocidade"""
+    while True:
+        try:
+            tamanho = float(input("Digite o tamanho da pista em metros: "))
+            if tamanho > 0:
+                break
+            else:
+                print(f"{VERMELHO}Valor inválido, por favor digite um positivo maior do que zero.{LIMPAR}")
+                sleep(1.5)
+                limpar_tela()
+        except ValueError:
+            print(f"{VERMELHO}Por favor digite um valor válido.{LIMPAR}")
+    return tamanho
 
 def obter_dados_vm(url):
     """Tenta obter dados da VM. Retorna os dados ou None em caso de falha."""
@@ -56,14 +71,10 @@ def salvar_dados_locais(json_interno, dados):
     with open(json_interno, 'w', encoding='utf-8') as file:
         json.dump(dados, file, indent=4)
 
-def obter_dados(lastN, tipo_dado):
+def obter_dados(lastN):
     """Obtém dados da VM ou JSON local"""
-    if tipo_dado == 'voltas':
-        url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
-        json_interno = 'dados.json'
-    else:
-        url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
-        json_interno = 'dados.json'
+    url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
+    json_interno = 'dados.json'
 
     dados_vm = obter_dados_vm(url)
     if dados_vm:
@@ -115,6 +126,56 @@ def plotar_grafico_horario(voltas_horario):
     plt.tight_layout()
     plt.show()
 
+def mostrar_volta_mais_rapida(voltas_milisegundos):
+    """Exibe a volta mais rápida em termos de tempo"""
+    if not voltas_milisegundos:
+        print("Nenhum dado disponível.")
+        return
+    volta_mais_rapida = min(voltas_milisegundos, key=lambda x: x['attrValue'][1])
+    volta_numero = volta_mais_rapida['attrValue'][0]
+    tempo_mais_rapido = converter_tempo(volta_mais_rapida['attrValue'][1])
+    print(f"A volta mais rápida foi a volta {volta_numero}, com tempo de {tempo_mais_rapido}.")
+
+def mostrar_volta_mais_lenta(voltas_milisegundos):
+    """Exibe a volta mais lenta em termos de tempo"""
+    if not voltas_milisegundos:
+        print("Nenhum dado disponível.")
+        return
+    volta_mais_lenta = max(voltas_milisegundos, key=lambda x: x['attrValue'][1])
+    volta_numero = volta_mais_lenta['attrValue'][0]
+    tempo_mais_lento = converter_tempo(volta_mais_lenta['attrValue'][1])
+    print(f"A volta mais lenta foi a volta {volta_numero}, com tempo de {tempo_mais_lento}.")
+
+def mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho):
+    """Exibe a maior velocidade média calculada"""
+    if not voltas_milisegundos or tamanho <= 0:
+        print("Nenhum dado ou pista inválida.")
+        return
+    velocidades = [(entry['attrValue'][0], tamanho / (entry['attrValue'][1] / 1000)) for entry in voltas_milisegundos]
+    volta_mais_rapida = max(velocidades, key=lambda x: x[1])
+    print(f"A maior velocidade média foi na volta {volta_mais_rapida[0]} com {volta_mais_rapida[1]:.2f} m/s.")
+
+def mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho):
+    """Exibe a menor velocidade média calculada"""
+    if not voltas_milisegundos or tamanho <= 0:
+        print("Nenhum dado ou pista inválida.")
+        return
+    velocidades = [(entry['attrValue'][0], tamanho / (entry['attrValue'][1] / 1000)) for entry in voltas_milisegundos]
+    volta_mais_lenta = min(velocidades, key=lambda x: x[1])
+    print(f"A menor velocidade média foi na volta {volta_mais_lenta[0]} com {volta_mais_lenta[1]:.2f} m/s.")
+
+def mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica):
+    """Mostra a velocidade e velocidade média de uma volta específica"""
+    if not voltas_milisegundos or tamanho <= 0:
+        print("Nenhum dado ou pista inválida.")
+        return
+    for entry in voltas_milisegundos:
+        if entry['attrValue'][0] == volta_especifica:
+            tempo = entry['attrValue'][1]
+            velocidade = tamanho / (tempo / 1000)
+            print(f"A velocidade da volta {volta_especifica} foi de {velocidade:.2f} m/s com tempo de {converter_tempo(tempo)}.")
+            return
+    print(f"Volta {volta_especifica} não encontrada.")
 
 def converter_tempo(tempo_ms):
     """Converte milissegundos para minutos, segundos e milissegundos se necessário"""
@@ -154,13 +215,49 @@ def plotar_grafico_milisegundos(voltas_milisegundos):
     plt.legend()
     plt.tight_layout()
     plt.show()
+    
+def plotar_grafico_velocidade_media(voltas_milisegundos, tamanho_pista):
+    """Gera gráfico da velocidade média por volta com base no comprimento da pista."""
+    if not voltas_milisegundos:
+        print("Nenhum dado disponível para plotar.")
+        return
+
+    voltas = [entry['attrValue'][0] for entry in voltas_milisegundos]
+    tempos = [entry['attrValue'][1] for entry in voltas_milisegundos]
+    
+    # Calculando a velocidade média (distância/tempo)
+    velocidades = [(tamanho_pista / (tempo / 1000)) for tempo in tempos]  # Convertendo tempo de ms para segundos
+    plt.figure(figsize=(12, 6))
+    plt.plot(voltas, velocidades, marker='o', linestyle='-', color='g', label="Velocidade por volta (m/s)")
+    plt.axhline(y=np.mean(velocidades), color='b', linestyle='--', label="Média de Velocidade")
+
+    for i, velocidade in enumerate(velocidades):
+        plt.text(voltas[i], velocidade + 0.1, f'{velocidade:.2f} m/s', ha='center', va='bottom', fontsize=9)
+
+    plt.xticks(voltas)
+    plt.title(f'Gráfico de Velocidade Média (Distância = {tamanho_pista}m)')
+    plt.xlabel('Número de Voltas')
+    plt.ylabel('Velocidade (m/s)')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
 def selecionar():
     """Seleciona a opção que o usuário deseja realizar"""
     while True:
         try:
-            opcao = int(input(f"{AZUL}Selecione a opção desejada{LIMPAR}:\n1 - Gerar gráfico de horário\n2 - Gerar gráfico de tempo em milissegundos\n3 - Sair\n----> "))
-            if opcao in [1, 2, 3]:
+            opcao = int(input(f"{AZUL}Selecione a opção desejada{LIMPAR}:\n"
+                                "1 - Gerar gráfico de horário\n"
+                                "2 - Gerar gráfico de tempo em milissegundos\n"
+                                "3 - Gerar gráfico de média de velocidade\n"
+                                "4 - Mostrar volta mais rápida\n"
+                                "5 - Mostrar volta mais lenta\n"
+                                "6 - Mostrar velocidade mais rápida\n"
+                                "7 - Mostrar velocidade mais lenta\n"
+                                "8 - Mostrar velocidade de uma volta específica\n"
+                                "9 - Sair\n----> "))
+            if opcao in range(1, 10):
                 break
             else:
                 print(f"{VERMELHO}Número não se encaixa na quantidade de opções.{LIMPAR}")
@@ -173,13 +270,42 @@ def selecionar():
 
     if opcao == 1:
         lastN = quantidade_de_dados()
-        horario_voltas = obter_dados(lastN, 'horarios')
+        horario_voltas = obter_dados(lastN)
         plotar_grafico_horario(horario_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 2:
         lastN = quantidade_de_dados()
-        tempo_voltas = obter_dados(lastN, 'voltas')
+        tempo_voltas = obter_dados(lastN)
         plotar_grafico_milisegundos(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 3:
+        lastN = quantidade_de_dados()
+        pista = tamanho_pista()
+        tempo_voltas = obter_dados(lastN)
+        plotar_grafico_velocidade_media(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'], pista)
+    elif opcao == 4:
+        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        mostrar_volta_mais_rapida(voltas_milisegundos)
+    elif opcao == 5:
+        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        mostrar_volta_mais_lenta(voltas_milisegundos)
+    elif opcao == 6:
+        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        tamanho = tamanho_pista()
+        mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho)
+    elif opcao == 7:
+        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        tamanho = tamanho_pista()
+        mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho)
+    elif opcao == 8:
+        while True:
+            try:
+                voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+                tamanho = tamanho_pista()
+                volta_especifica = int(input("Digite o número da volta específica: "))
+                mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica)
+                break
+            except ValueError:
+                print(f"{VERMELHO}Por favor, insira um número válido.{LIMPAR}")
+    elif opcao == 9:
         sair()
 
 def quantidade_de_dados():
@@ -196,7 +322,13 @@ def quantidade_de_dados():
 
 def main():
     """Função principal que chama as outras funções"""
-    selecionar()
+    while True:
+        try:
+            selecionar()
+        except Exception as e:
+            print(f"{VERMELHO}Ocorreu um erro: {str(e)}{LIMPAR}")
+            sleep(1.5)
+            limpar_tela()
 
 # Executar o programa
 if __name__ == "__main__":
