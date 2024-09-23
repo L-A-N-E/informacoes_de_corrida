@@ -54,7 +54,7 @@ def obter_dados_vm(url):
         data = response.json()
         return data
     except requests.RequestException as e:
-        print(f"Erro ao obter dados da VM: {e}")
+        print(f"{VERMELHO}Erro ao obter dados da VM: {e}{LIMPAR}")
         return None
 
 def carregar_dados_locais(json_interno):
@@ -63,7 +63,7 @@ def carregar_dados_locais(json_interno):
         with open(json_interno, 'r', encoding='utf-8') as file:
             return json.load(file)
     else:
-        print(f"Arquivo {json_interno} não encontrado.")
+        print(f"{VERMELHO}Arquivo {json_interno} não encontrado.{LIMPAR}")
         return None
 
 def salvar_dados_locais(json_interno, dados):
@@ -78,17 +78,17 @@ def obter_dados(lastN):
 
     dados_vm = obter_dados_vm(url)
     if dados_vm:
-        print("Dados obtidos da VM com sucesso.")
+        print(f"{VERDE}Dados obtidos da VM com sucesso.{LIMPAR}")
         salvar_dados_locais(json_interno, dados_vm)
         return dados_vm
     else:
-        print("Usando dados locais.")
+        print(f"{AZUL}Usando dados locais.{LIMPAR}")
         return carregar_dados_locais(json_interno)
 
 def plotar_grafico_horario(voltas_horario):
     """Gera gráfico de horário (horas:minutos:segundos:milissegundos) com curva suavizada"""
     if not voltas_horario:
-        print("Nenhum dado disponível para plotar.")
+        print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
         return
 
     voltas = list(range(1, len(voltas_horario) + 1))
@@ -129,53 +129,53 @@ def plotar_grafico_horario(voltas_horario):
 def mostrar_volta_mais_rapida(voltas_milisegundos):
     """Exibe a volta mais rápida em termos de tempo"""
     if not voltas_milisegundos:
-        print("Nenhum dado disponível.")
+        print(f"{VERMELHO}Nenhum dado disponível.{LIMPAR}")
         return
     volta_mais_rapida = min(voltas_milisegundos, key=lambda x: x['attrValue'][1])
     volta_numero = volta_mais_rapida['attrValue'][0]
     tempo_mais_rapido = converter_tempo(volta_mais_rapida['attrValue'][1])
-    print(f"A volta mais rápida foi a volta {volta_numero}, com tempo de {tempo_mais_rapido}.")
+    print(f"{NEGRITO}{UNDERLINE}{VERDE}A volta mais rápida foi a volta {volta_numero}, com tempo de {tempo_mais_rapido}.{LIMPAR}")
 
 def mostrar_volta_mais_lenta(voltas_milisegundos):
     """Exibe a volta mais lenta em termos de tempo"""
     if not voltas_milisegundos:
-        print("Nenhum dado disponível.")
+        print(f"{VERMELHO}Nenhum dado disponível.{LIMPAR}")
         return
     volta_mais_lenta = max(voltas_milisegundos, key=lambda x: x['attrValue'][1])
     volta_numero = volta_mais_lenta['attrValue'][0]
     tempo_mais_lento = converter_tempo(volta_mais_lenta['attrValue'][1])
-    print(f"A volta mais lenta foi a volta {volta_numero}, com tempo de {tempo_mais_lento}.")
+    print(f"{NEGRITO}{UNDERLINE}{VERDE}A volta mais lenta foi a volta {volta_numero}, com tempo de {tempo_mais_lento}.{LIMPAR}")
 
 def mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho):
     """Exibe a maior velocidade média calculada"""
     if not voltas_milisegundos or tamanho <= 0:
-        print("Nenhum dado ou pista inválida.")
+        print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
         return
     velocidades = [(entry['attrValue'][0], tamanho / (entry['attrValue'][1] / 1000)) for entry in voltas_milisegundos]
     volta_mais_rapida = max(velocidades, key=lambda x: x[1])
-    print(f"A maior velocidade média foi na volta {volta_mais_rapida[0]} com {volta_mais_rapida[1]:.2f} m/s.")
+    print(f"{NEGRITO}{UNDERLINE}{VERDE}A maior velocidade média foi na volta {volta_mais_rapida[0]} com {volta_mais_rapida[1]:.2f} m/s.{LIMPAR}")
 
 def mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho):
     """Exibe a menor velocidade média calculada"""
     if not voltas_milisegundos or tamanho <= 0:
-        print("Nenhum dado ou pista inválida.")
+        print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
         return
     velocidades = [(entry['attrValue'][0], tamanho / (entry['attrValue'][1] / 1000)) for entry in voltas_milisegundos]
     volta_mais_lenta = min(velocidades, key=lambda x: x[1])
-    print(f"A menor velocidade média foi na volta {volta_mais_lenta[0]} com {volta_mais_lenta[1]:.2f} m/s.")
+    print(f"{NEGRITO}{UNDERLINE}{VERDE}A menor velocidade média foi na volta {volta_mais_lenta[0]} com {volta_mais_lenta[1]:.2f} m/s.{LIMPAR}")
 
 def mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica):
     """Mostra a velocidade e velocidade média de uma volta específica"""
     if not voltas_milisegundos or tamanho <= 0:
-        print("Nenhum dado ou pista inválida.")
+        print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
         return
     for entry in voltas_milisegundos:
         if entry['attrValue'][0] == volta_especifica:
             tempo = entry['attrValue'][1]
             velocidade = tamanho / (tempo / 1000)
-            print(f"A velocidade da volta {volta_especifica} foi de {velocidade:.2f} m/s com tempo de {converter_tempo(tempo)}.")
+            print(f"{NEGRITO}{UNDERLINE}{VERDE}A velocidade da volta {volta_especifica} foi de {velocidade:.2f} m/s com tempo de {converter_tempo(tempo)}.{LIMPAR}")
             return
-    print(f"Volta {volta_especifica} não encontrada.")
+    print(f"{VERMELHO}Volta {volta_especifica} não encontrada.{LIMPAR}")
 
 def converter_tempo(tempo_ms):
     """Converte milissegundos para minutos, segundos e milissegundos se necessário"""
@@ -192,7 +192,7 @@ def converter_tempo(tempo_ms):
 def plotar_grafico_milisegundos(voltas_milisegundos):
     """Gera gráfico de tempo em milissegundos por volta e exibe o valor dos milissegundos em cada ponto"""
     if not voltas_milisegundos:
-        print("Nenhum dado disponível para plotar.")
+        print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
         return
 
     voltas = [entry['attrValue'][0] for entry in voltas_milisegundos]
@@ -219,7 +219,7 @@ def plotar_grafico_milisegundos(voltas_milisegundos):
 def plotar_grafico_velocidade_media(voltas_milisegundos, tamanho_pista):
     """Gera gráfico da velocidade média por volta com base no comprimento da pista."""
     if not voltas_milisegundos:
-        print("Nenhum dado disponível para plotar.")
+        print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
         return
 
     voltas = [entry['attrValue'][0] for entry in voltas_milisegundos]
@@ -270,19 +270,19 @@ def selecionar():
 
     if opcao == 1:
         lastN = quantidade_de_dados()
-        horario_voltas = obter_dados(lastN)
         limpar_tela()
+        horario_voltas = obter_dados(lastN)
         plotar_grafico_horario(horario_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 2:
         lastN = quantidade_de_dados()
-        tempo_voltas = obter_dados(lastN)
         limpar_tela()
+        tempo_voltas = obter_dados(lastN)
         plotar_grafico_milisegundos(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'])
     elif opcao == 3:
         lastN = quantidade_de_dados()
         pista = tamanho_pista()
-        tempo_voltas = obter_dados(lastN)
         limpar_tela()
+        tempo_voltas = obter_dados(lastN)
         plotar_grafico_velocidade_media(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'], pista)
     elif opcao == 4:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
