@@ -27,6 +27,23 @@ def sair():
     print(f"{VERDE}Sistema finalizado. Tenha um bom dia!{LIMPAR}")
     exit()
 
+def entrar():
+    """Entra no sub-menu"""
+    for i in range(1, 4):
+        print(f"Entrando no sub-menu{'.' * i}")
+        sleep(0.9)
+        limpar_tela()
+    subSelecionar()
+    
+def voltar():
+    """Volta ao menu principal"""
+    limpar_tela()
+    for i in range(1, 4):
+        print(f"voltando ao menu principal{'.' * i}")
+        sleep(0.9)
+        limpar_tela()
+    selecionar()
+    
 def tamanho_pista():
     """Usuário insere o tamanho da pista para o cálculo de média da velocidade"""
     while True:
@@ -53,8 +70,8 @@ def obter_dados_vm(url):
         response.raise_for_status()
         data = response.json()
         return data
-    except requests.RequestException as e:
-        print(f"{VERMELHO}Erro ao obter dados da VM: {e}{LIMPAR}")
+    except requests.RequestException:
+        print(f"{VERMELHO}Erro ao obter dados da VM{LIMPAR}")
         return None
 
 def carregar_dados_locais(json_interno):
@@ -86,13 +103,14 @@ def obter_dados(lastN):
         return carregar_dados_locais(json_interno)
 
 def plotar_grafico_horario(voltas_horario):
-    """Gera gráfico de horário (horas:minutos:segundos:milissegundos) com curva suavizada"""
+    """Gera gráfico de horário (horas:minutos:segundos:milissegundos)"""
     if not voltas_horario:
         print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
         return
 
     voltas = list(range(1, len(voltas_horario) + 1))
-    tempos = [datetime.strptime(entry['recvTime'], "%Y-%m-%dT%H:%M:%S.%fZ") for entry in voltas_horario]
+    tempos = [datetime.strptime(entry['recvTime'], "%Y-%m-%dT%H:%M:%S.%fZ") - timedelta(hours=3) for entry in voltas_horario]
+
 
     # Convertendo os tempos em segundos (ou qualquer unidade contínua) para suavização
     tempos_segundos = [(tempo - tempos[0]).total_seconds() for tempo in tempos]
@@ -118,7 +136,7 @@ def plotar_grafico_horario(voltas_horario):
     # Configurações do gráfico
     plt.gca().yaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
     plt.xticks(voltas)
-    plt.title('Gráfico de Horário em Função das Voltas com Curva Suavizada')
+    plt.title('Gráfico de Horário em Função das Voltas')
     plt.xlabel('Número de Voltas')
     plt.ylabel('Horário (Horas:Minutos:Segundos:Milissegundos)')
     plt.grid(True)
@@ -251,13 +269,10 @@ def selecionar():
                                 "1 - Gerar gráfico de horário\n"
                                 "2 - Gerar gráfico de tempo em milissegundos\n"
                                 "3 - Gerar gráfico de média de velocidade\n"
-                                "4 - Mostrar volta mais rápida\n"
-                                "5 - Mostrar volta mais lenta\n"
-                                "6 - Mostrar velocidade mais rápida\n"
-                                "7 - Mostrar velocidade mais lenta\n"
-                                "8 - Mostrar velocidade de uma volta específica\n"
-                                "9 - Sair\n----> "))
-            if opcao in range(1, 10):
+                                "4 - Abrir sub menu\n"
+                                "5 - Sair\n---->"
+))
+            if opcao in range(1, 6):
                 break
             else:
                 print(f"{VERMELHO}Número não se encaixa na quantidade de opções.{LIMPAR}")
@@ -285,24 +300,44 @@ def selecionar():
         tempo_voltas = obter_dados(lastN)
         plotar_grafico_velocidade_media(tempo_voltas['contextResponses'][0]['contextElement']['attributes'][0]['values'], pista)
     elif opcao == 4:
+        limpar_tela()
+        entrar()
+    elif opcao == 5:
+        sair()
+        
+def subSelecionar():
+    while True:
+        try:
+            opcao = int(input(f"{AZUL}Sub-menu de opções\n"
+                                f"Selecione a opção desejada{LIMPAR}:\n"
+                                "1 - Mostrar volta e velocidade mais rápidas\n"
+                                "2 - Mostrar volta e velocidades mais lentas\n"
+                                "3 - Mostrar velocidade de uma volta específica\n"
+                                "4 - Voltar ao menu principal\n"
+                                "5 - Sair\n----> "))   
+            if opcao in range(1, 6):
+                break
+            else:
+                print(f"{VERMELHO}Número não se encaixa na quantidade de opções.{LIMPAR}")
+                sleep(1.5)
+                limpar_tela()
+        except ValueError:
+            print(f"{VERMELHO}Valor inválido digitado. Por favor, insira novamente.{LIMPAR}")
+            sleep(1.5)
+            limpar_tela()
+    if opcao == 1:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        tamanho = tamanho_pista()
         limpar_tela()
         mostrar_volta_mais_rapida(voltas_milisegundos)
-    elif opcao == 5:
+        mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho)
+    elif opcao == 2:
         voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
+        tamanho = tamanho_pista()
         limpar_tela()
         mostrar_volta_mais_lenta(voltas_milisegundos)
-    elif opcao == 6:
-        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
-        tamanho = tamanho_pista()
-        limpar_tela()
-        mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho)
-    elif opcao == 7:
-        voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
-        tamanho = tamanho_pista()
-        limpar_tela()
         mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho)
-    elif opcao == 8:
+    elif opcao == 3:
         while True:
             try:
                 voltas_milisegundos = obter_dados(quantidade_de_dados())['contextResponses'][0]['contextElement']['attributes'][0]['values']
@@ -313,20 +348,26 @@ def selecionar():
                 break
             except ValueError:
                 print(f"{VERMELHO}Por favor, insira um número válido.{LIMPAR}")
-    elif opcao == 9:
+    elif opcao == 4:
+        voltar()
+    elif opcao == 5:
         sair()
 
 def quantidade_de_dados():
     """Pergunta ao usuário a quantidade de dados para o gráfico e retorna o valor"""
     while True:
         try:
-            lastN = int(input("Digite um valor para lastN (entre 1 e 100): "))
-            if 1 <= lastN <= 100:
+            lastN = int(input("Digite um valor para lastN (entre 1 e 10): "))
+            if 1 <= lastN <= 10:
                 return lastN
             else:
-                print(f"{VERMELHO}O valor deve estar entre 1 e 100. Tente novamente.{LIMPAR}")
+                print(f"{VERMELHO}O valor deve estar entre 1 e 10. Tente novamente.{LIMPAR}")
+                sleep(1.5)
+                limpar_tela()
         except ValueError:
             print(f"{VERMELHO}Por favor, digite um número válido.{LIMPAR}")
+            sleep(1.5)
+            limpar_tela()
 
 def main():
     """Função principal que chama as outras funções"""
