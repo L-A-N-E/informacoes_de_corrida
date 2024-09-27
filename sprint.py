@@ -17,25 +17,25 @@ AZUL = "\033[34m"
 UNDERLINE = "\033[4m"
 NEGRITO = "\033[1m"
 
-def limpar_tela():
+def limpar_tela() -> None:
     """Limpa o terminal, seja no Windows ou Unix"""
     os.system('cls' if os.name == 'nt' else 'clear')
 
-def sair():
+def sair() -> None:
     """Limpa o terminal, exibe mensagem e encerra o programa"""
     limpar_tela()
     print(f"{VERDE}Sistema finalizado. Tenha um bom dia!{LIMPAR}")
     exit()
 
-def entrar():
-    """Entra no sub-menu"""
+def entrar() -> None:
+    """Entra no submenu"""
     for i in range(1, 4):
-        print(f"Entrando no sub-menu{'.' * i}")
+        print(f"Entrando no submenu{'.' * i}")
         sleep(0.9)
         limpar_tela()
-    subSelecionar()
+    sub_selecionar()
     
-def voltar():
+def voltar() -> None:
     """Volta ao menu principal"""
     limpar_tela()
     for i in range(1, 4):
@@ -44,7 +44,7 @@ def voltar():
         limpar_tela()
     selecionar()
     
-def tamanho_pista():
+def tamanho_pista() -> float:
     """Usuário insere o tamanho da pista para o cálculo de média da velocidade"""
     while True:
         try:
@@ -59,7 +59,7 @@ def tamanho_pista():
             print(f"{VERMELHO}Por favor digite um valor válido.{LIMPAR}")
     return tamanho
 
-def obter_dados_vm(url):
+def obter_dados_vm(url: str) -> dict | None:
     """Tenta obter dados da VM. Retorna os dados ou None em caso de falha."""
     headers = {
         'fiware-service': 'smart',
@@ -74,7 +74,7 @@ def obter_dados_vm(url):
         print(f"{VERMELHO}Erro ao obter dados da VM{LIMPAR}")
         return None
 
-def carregar_dados_locais(json_interno):
+def carregar_dados_locais(json_interno: str) -> dict | None:
     """Carrega os dados salvos localmente do JSON interno."""
     if os.path.exists(json_interno):
         with open(json_interno, 'r', encoding='utf-8') as file:
@@ -83,12 +83,12 @@ def carregar_dados_locais(json_interno):
         print(f"{VERMELHO}Arquivo {json_interno} não encontrado.{LIMPAR}")
         return None
 
-def salvar_dados_locais(json_interno, dados):
+def salvar_dados_locais(json_interno: str, dados: dict) -> None:
     """Salva os dados recebidos da VM no JSON interno."""
     with open(json_interno, 'w', encoding='utf-8') as file:
         json.dump(dados, file, indent=4)
 
-def obter_dados(lastN):
+def obter_dados(lastN: int) -> dict | None:
     """Obtém dados da VM ou JSON local"""
     url = f"http://74.249.83.253:8666/STH/v1/contextEntities/type/TrackVision/id/urn:ngsi-ld:TRV:027/attributes/lap?lastN={lastN}"
     json_interno = 'dados.json'
@@ -102,7 +102,7 @@ def obter_dados(lastN):
         print(f"{AZUL}Usando dados locais.{LIMPAR}")
         return carregar_dados_locais(json_interno)
 
-def plotar_grafico_horario(voltas_horario):
+def plotar_grafico_horario(voltas_horario: list[dict]) -> None:
     """Gera gráfico de horário (horas:minutos:segundos:milissegundos)"""
     if not voltas_horario:
         print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
@@ -144,7 +144,7 @@ def plotar_grafico_horario(voltas_horario):
     plt.tight_layout()
     plt.show()
 
-def mostrar_volta_mais_rapida(voltas_milisegundos):
+def mostrar_volta_mais_rapida(voltas_milisegundos: list[dict]) -> None:
     """Exibe a volta mais rápida em termos de tempo"""
     if not voltas_milisegundos:
         print(f"{VERMELHO}Nenhum dado disponível.{LIMPAR}")
@@ -154,7 +154,7 @@ def mostrar_volta_mais_rapida(voltas_milisegundos):
     tempo_mais_rapido = converter_tempo(volta_mais_rapida['attrValue'][1])
     print(f"{NEGRITO}{UNDERLINE}{VERDE}A volta mais rápida foi a volta {volta_numero}, com tempo de {tempo_mais_rapido}.{LIMPAR}")
 
-def mostrar_volta_mais_lenta(voltas_milisegundos):
+def mostrar_volta_mais_lenta(voltas_milisegundos: list[dict]) -> None:
     """Exibe a volta mais lenta em termos de tempo"""
     if not voltas_milisegundos:
         print(f"{VERMELHO}Nenhum dado disponível.{LIMPAR}")
@@ -164,7 +164,7 @@ def mostrar_volta_mais_lenta(voltas_milisegundos):
     tempo_mais_lento = converter_tempo(volta_mais_lenta['attrValue'][1])
     print(f"{NEGRITO}{UNDERLINE}{VERDE}A volta mais lenta foi a volta {volta_numero}, com tempo de {tempo_mais_lento}.{LIMPAR}")
 
-def mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho):
+def mostrar_velocidade_media_mais_rapida(voltas_milisegundos: list[dict], tamanho: float) -> None:
     """Exibe a maior velocidade média calculada"""
     if not voltas_milisegundos or tamanho <= 0:
         print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
@@ -173,7 +173,7 @@ def mostrar_velocidade_media_mais_rapida(voltas_milisegundos, tamanho):
     volta_mais_rapida = max(velocidades, key=lambda x: x[1])
     print(f"{NEGRITO}{UNDERLINE}{VERDE}A maior velocidade média foi na volta {volta_mais_rapida[0]} com {volta_mais_rapida[1]:.2f} m/s.{LIMPAR}")
 
-def mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho):
+def mostrar_velocidade_media_mais_baixa(voltas_milisegundos: list[dict], tamanho: float) -> None:
     """Exibe a menor velocidade média calculada"""
     if not voltas_milisegundos or tamanho <= 0:
         print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
@@ -182,7 +182,7 @@ def mostrar_velocidade_media_mais_baixa(voltas_milisegundos, tamanho):
     volta_mais_lenta = min(velocidades, key=lambda x: x[1])
     print(f"{NEGRITO}{UNDERLINE}{VERDE}A menor velocidade média foi na volta {volta_mais_lenta[0]} com {volta_mais_lenta[1]:.2f} m/s.{LIMPAR}")
 
-def mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica):
+def mostrar_velocidade_especifica(voltas_milisegundos: list[dict], tamanho: float, volta_especifica: int):
     """Mostra a velocidade e velocidade média de uma volta específica"""
     if not voltas_milisegundos or tamanho <= 0:
         print(f"{VERMELHO}Nenhum dado ou pista inválida.{LIMPAR}")
@@ -195,7 +195,7 @@ def mostrar_velocidade_especifica(voltas_milisegundos, tamanho, volta_especifica
             return
     print(f"{VERMELHO}Volta {volta_especifica} não encontrada.{LIMPAR}")
 
-def converter_tempo(tempo_ms):
+def converter_tempo(tempo_ms: int) -> str:
     """Converte milissegundos para minutos, segundos e milissegundos se necessário"""
     if tempo_ms >= 1000:
         minutos, resto = divmod(tempo_ms, 60000)
@@ -207,7 +207,7 @@ def converter_tempo(tempo_ms):
     else:
         return f'{tempo_ms} ms'
 
-def plotar_grafico_milisegundos(voltas_milisegundos):
+def plotar_grafico_milisegundos(voltas_milisegundos: list[dict]) -> None:
     """Gera gráfico de tempo em milissegundos por volta e exibe o valor dos milissegundos em cada ponto"""
     if not voltas_milisegundos:
         print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
@@ -234,7 +234,7 @@ def plotar_grafico_milisegundos(voltas_milisegundos):
     plt.tight_layout()
     plt.show()
     
-def plotar_grafico_velocidade_media(voltas_milisegundos, tamanho_pista):
+def plotar_grafico_velocidade_media(voltas_milisegundos: list[dict], tamanho_pista: float) -> None:
     """Gera gráfico da velocidade média por volta com base no comprimento da pista."""
     if not voltas_milisegundos:
         print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
@@ -261,7 +261,7 @@ def plotar_grafico_velocidade_media(voltas_milisegundos, tamanho_pista):
     plt.tight_layout()
     plt.show()
 
-def selecionar():
+def selecionar() -> None:
     """Seleciona a opção que o usuário deseja realizar"""
     while True:
         try:
@@ -269,7 +269,7 @@ def selecionar():
                                 "1 - Gerar gráfico de horário\n"
                                 "2 - Gerar gráfico de tempo em milissegundos\n"
                                 "3 - Gerar gráfico de média de velocidade\n"
-                                "4 - Abrir sub menu\n"
+                                "4 - Abrir submenu\n"
                                 "5 - Sair\n---->"
 ))
             if opcao in range(1, 6):
@@ -305,10 +305,11 @@ def selecionar():
     elif opcao == 5:
         sair()
         
-def subSelecionar():
+def sub_selecionar() -> None:
+    """Um submenu de opções que mostram funcionalidades adicionais"""
     while True:
         try:
-            opcao = int(input(f"{AZUL}Sub-menu de opções\n"
+            opcao = int(input(f"{AZUL}Submenu de opções\n"
                                 f"Selecione a opção desejada{LIMPAR}:\n"
                                 "1 - Mostrar volta e velocidade mais rápidas\n"
                                 "2 - Mostrar volta e velocidades mais lentas\n"
@@ -353,7 +354,7 @@ def subSelecionar():
     elif opcao == 5:
         sair()
 
-def quantidade_de_dados():
+def quantidade_de_dados() -> int:
     """Pergunta ao usuário a quantidade de dados para o gráfico e retorna o valor"""
     while True:
         try:
@@ -369,7 +370,7 @@ def quantidade_de_dados():
             sleep(1.5)
             limpar_tela()
 
-def main():
+def main() -> None:
     """Função principal que chama as outras funções"""
     while True:
         try:

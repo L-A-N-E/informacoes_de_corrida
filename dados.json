@@ -7,93 +7,103 @@
                         "name": "lap",
                         "values": [
                             {
-                                "_id": "66f318f3e370710007b97846",
-                                "recvTime": "2024-09-24T19:54:27.706Z",
+                                "_id": "66f4a0f798c8ac00075e6d60",
+                                "recvTime": "2024-09-25T23:47:01.448Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    1,
+                                    2489
+                                ]
+                            },
+                            {
+                                "_id": "66f4a0f998c8ac00075e6d67",
+                                "recvTime": "2024-09-25T23:47:04.442Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     2,
-                                    890
+                                    2033
                                 ]
                             },
                             {
-                                "_id": "66f318f4e370710007b97848",
-                                "recvTime": "2024-09-24T19:54:28.307Z",
+                                "_id": "66f4a0fc98c8ac00075e6d6d",
+                                "recvTime": "2024-09-25T23:47:06.982Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     3,
-                                    599
+                                    1634
                                 ]
                             },
                             {
-                                "_id": "66f318f4e370710007b9784a",
-                                "recvTime": "2024-09-24T19:54:28.921Z",
+                                "_id": "66f4a0fe98c8ac00075e6d73",
+                                "recvTime": "2024-09-25T23:47:09.559Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     4,
-                                    613
+                                    1466
                                 ]
                             },
                             {
-                                "_id": "66f318f5e370710007b9784c",
-                                "recvTime": "2024-09-24T19:54:29.494Z",
+                                "_id": "66f4a10198c8ac00075e6d77",
+                                "recvTime": "2024-09-25T23:47:12.168Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     5,
-                                    576
+                                    1500
                                 ]
                             },
                             {
-                                "_id": "66f318f6e370710007b9784e",
-                                "recvTime": "2024-09-24T19:54:30.133Z",
+                                "_id": "66f4a10498c8ac00075e6d7b",
+                                "recvTime": "2024-09-25T23:47:15.135Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     6,
-                                    639
+                                    1700
                                 ]
                             },
                             {
-                                "_id": "66f318f6e370710007b97850",
-                                "recvTime": "2024-09-24T19:54:30.673Z",
+                                "_id": "66f4a10798c8ac00075e6d7f",
+                                "recvTime": "2024-09-25T23:47:18.449Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     7,
-                                    541
+                                    1867
                                 ]
                             },
                             {
-                                "_id": "66f318f7e370710007b97852",
-                                "recvTime": "2024-09-24T19:54:31.221Z",
+                                "_id": "66f4a10998c8ac00075e6d83",
+                                "recvTime": "2024-09-25T23:47:20.992Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     8,
-                                    547
+                                    1433
                                 ]
                             },
                             {
-                                "_id": "66f318f7e370710007b97854",
-                                "recvTime": "2024-09-24T19:54:31.783Z",
+                                "_id": "66f4a10c98c8ac00075e6d87",
+                                "recvTime": "2024-09-25T23:47:23.200Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     9,
-                                    561
+                                    1134
                                 ]
                             },
                             {
-                                "_id": "66f318f8e370710007b97856",
-                                "recvTime": "2024-09-24T19:54:32.326Z",
+                                "_id": "66f4a10f98c8ac00075e6d8a",
+                                "recvTime": "2024-09-25T23:47:26.550Z",
                                 "attrName": "lap",
                                 "attrType": "String",
                                 "attrValue": [
                                     10,
-                                    541
+                                    1833
                                 ]
                             }
                         ]
