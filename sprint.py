@@ -111,22 +111,22 @@ def plotar_grafico_horario(voltas_horario: list[dict]) -> None:
     voltas = list(range(1, len(voltas_horario) + 1))
     tempos = [datetime.strptime(entry['recvTime'], "%Y-%m-%dT%H:%M:%S.%fZ") - timedelta(hours=3) for entry in voltas_horario]
 
-
     # Convertendo os tempos em segundos (ou qualquer unidade contínua) para suavização
     tempos_segundos = [(tempo - tempos[0]).total_seconds() for tempo in tempos]
-
-    # Gerando uma curva suavizada com Spline
-    voltas_smooth = np.linspace(min(voltas), max(voltas), 300)  # Valores interpolados para suavização
-    spline = make_interp_spline(voltas, tempos_segundos, k=3)  # Interpolação spline cúbica
-    tempos_smooth = spline(voltas_smooth)
 
     # Criando o gráfico
     plt.figure(figsize=(12, 6))
     plt.plot(voltas, tempos, marker='o', linestyle='-', color='r', label="Horário por volta")
 
-    # Adicionando a linha azul suavizada
-    tempos_smooth_datetime = [tempos[0] + timedelta(seconds=seg) for seg in tempos_smooth]  # Convertendo de volta para datetime
-    plt.plot(voltas_smooth, tempos_smooth_datetime, color='b', linestyle='-', label="Curva de função média em relação ao tempo")
+    if len(voltas) >= 4:
+        # Gerando uma curva suavizada com Spline somente se houver 4 ou mais pontos
+        voltas_smooth = np.linspace(min(voltas), max(voltas), 300)  # Valores interpolados para suavização
+        spline = make_interp_spline(voltas, tempos_segundos, k=3)  # Interpolação spline cúbica
+        tempos_smooth = spline(voltas_smooth)
+
+        # Convertendo de volta para datetime
+        tempos_smooth_datetime = [tempos[0] + timedelta(seconds=seg) for seg in tempos_smooth]
+        plt.plot(voltas_smooth, tempos_smooth_datetime, color='b', linestyle='-', label="Curva suavizada")
 
     # Adicionando os valores dos horários diretamente no gráfico
     for i, tempo in enumerate(tempos):
@@ -358,6 +358,7 @@ def quantidade_de_dados() -> int:
     """Pergunta ao usuário a quantidade de dados para o gráfico e retorna o valor"""
     while True:
         try:
+            print("Obs: caso o código não consiga se conectar com a VM, a geração de gráficos será feita com todos os dados disponíveis no JSON")
             lastN = int(input("Digite um valor para lastN (entre 1 e 10): "))
             if 1 <= lastN <= 10:
                 return lastN
