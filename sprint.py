@@ -1,10 +1,15 @@
+# Alice Santos Bulhões RM: 554499
+# Eduardo Oliveira Cardoso Madid RM: 556349
+# Lucas Henzo Ide Yuki RM: 554865
+# Nicolas Haubricht Hainfellner RM: 556259
+
 # Importando as bibliotecas necessárias
 import json
 import os
 from time import sleep
-import matplotlib.dates as mdates
 from datetime import datetime, timedelta
 import numpy as np
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import requests
 from scipy.interpolate import make_interp_spline
@@ -34,7 +39,7 @@ def entrar() -> None:
         sleep(0.9)
         limpar_tela()
     sub_selecionar()
-    
+
 def voltar() -> None:
     """Volta ao menu principal"""
     limpar_tela()
@@ -43,7 +48,7 @@ def voltar() -> None:
         sleep(0.9)
         limpar_tela()
     selecionar()
-    
+
 def tamanho_pista() -> float:
     """Usuário insere o tamanho da pista para o cálculo de média da velocidade"""
     while True:
@@ -66,13 +71,17 @@ def obter_dados_vm(url: str) -> dict | None:
         'fiware-servicepath': '/'
     }
     try:
-        response = requests.get(url, headers=headers)
+        # Adiciona um tempo limite para a requisição
+        response = requests.get(url, headers=headers, timeout=5)
         response.raise_for_status()
         data = response.json()
         return data
-    except requests.RequestException:
-        print(f"{VERMELHO}Erro ao obter dados da VM{LIMPAR}")
-        return None
+    except requests.Timeout:
+        print(f"{VERMELHO}Erro: Tempo de conexão esgotado ao tentar obter dados da VM{LIMPAR}")
+    except requests.RequestException as e:
+        print(f"{VERMELHO}Erro ao obter dados da VM: {e}{LIMPAR}")
+    return None
+
 
 def carregar_dados_locais(json_interno: str) -> dict | None:
     """Carrega os dados salvos localmente do JSON interno."""
@@ -233,8 +242,8 @@ def plotar_grafico_milisegundos(voltas_milisegundos: list[dict]) -> None:
     plt.legend()
     plt.tight_layout()
     plt.show()
-    
-def plotar_grafico_velocidade_media(voltas_milisegundos: list[dict], tamanho_pista: float) -> None:
+
+def plotar_grafico_velocidade_media(voltas_milisegundos: list[dict], tamanho: float) -> None:
     """Gera gráfico da velocidade média por volta com base no comprimento da pista."""
     if not voltas_milisegundos:
         print(f"{VERMELHO}Nenhum dado disponível para plotar.{LIMPAR}")
@@ -242,9 +251,9 @@ def plotar_grafico_velocidade_media(voltas_milisegundos: list[dict], tamanho_pis
 
     voltas = [entry['attrValue'][0] for entry in voltas_milisegundos]
     tempos = [entry['attrValue'][1] for entry in voltas_milisegundos]
-    
+
     # Calculando a velocidade média (distância/tempo)
-    velocidades = [(tamanho_pista / (tempo / 1000)) for tempo in tempos]  # Convertendo tempo de ms para segundos
+    velocidades = [(tamanho / (tempo / 1000)) for tempo in tempos]  # Convertendo tempo de ms para segundos
     plt.figure(figsize=(12, 6))
     plt.plot(voltas, velocidades, marker='o', linestyle='-', color='g', label="Velocidade por volta (m/s)")
     plt.axhline(y=np.mean(velocidades), color='b', linestyle='--', label="Média de Velocidade")
@@ -253,7 +262,7 @@ def plotar_grafico_velocidade_media(voltas_milisegundos: list[dict], tamanho_pis
         plt.text(voltas[i], velocidade + 0.1, f'{velocidade:.2f} m/s', ha='center', va='bottom', fontsize=9)
 
     plt.xticks(voltas)
-    plt.title(f'Gráfico de Velocidade Média (Distância = {tamanho_pista}m)')
+    plt.title(f'Gráfico de Velocidade Média (Distância = {tamanho}m)')
     plt.xlabel('Número de Voltas')
     plt.ylabel('Velocidade (m/s)')
     plt.grid(True)
@@ -304,7 +313,7 @@ def selecionar() -> None:
         entrar()
     elif opcao == 5:
         sair()
-        
+
 def sub_selecionar() -> None:
     """Um submenu de opções que mostram funcionalidades adicionais"""
     while True:
@@ -376,10 +385,14 @@ def main() -> None:
     while True:
         try:
             selecionar()
+        except KeyboardInterrupt:
+            print(f"{VERMELHO}Execução interrompida pelo usuário!{LIMPAR}")
+            break  # Sai do loop se o usuário pressionar Ctrl+C
         except Exception as e:
-            print(f"{VERMELHO}Ocorreu um erro: {str(e)}{LIMPAR}")
+            print(f"{VERMELHO}Erro inesperado: {str(e)}{LIMPAR}")
             sleep(1.5)
             limpar_tela()
+
 
 # Executar o programa
 if __name__ == "__main__":
