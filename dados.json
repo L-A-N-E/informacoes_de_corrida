@@ -1,0 +1,122 @@
+{
+    "contextResponses": [
+        {
+            "contextElement": {
+                "attributes": [
+                    {
+                        "name": "lap",
+                        "values": [
+                            {
+                                "_id": "67183ad797027200079771cb",
+                                "recvTime": "2024-10-22T23:52:54.525Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    8,
+                                    638
+                                ]
+                            },
+                            {
+                                "_id": "67183ad797027200079771cd",
+                                "recvTime": "2024-10-22T23:52:54.529Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    9,
+                                    565
+                                ]
+                            },
+                            {
+                                "_id": "67183ad797027200079771cc",
+                                "recvTime": "2024-10-22T23:52:54.534Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    10,
+                                    1458
+                                ]
+                            },
+                            {
+                                "_id": "67183b0e97027200079771d0",
+                                "recvTime": "2024-10-22T23:53:32.535Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    1,
+                                    7213
+                                ]
+                            },
+                            {
+                                "_id": "67183b1697027200079771d2",
+                                "recvTime": "2024-10-22T23:53:41.030Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    2,
+                                    3453
+                                ]
+                            },
+                            {
+                                "_id": "67183b1597027200079771d1",
+                                "recvTime": "2024-10-22T23:53:44.724Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    3,
+                                    3352
+                                ]
+                            },
+                            {
+                                "_id": "67183b1e97027200079771d6",
+                                "recvTime": "2024-10-22T23:53:47.930Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    4,
+                                    3716
+                                ]
+                            },
+                            {
+                                "_id": "67183b1e97027200079771d5",
+                                "recvTime": "2024-10-22T23:53:52.534Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    5,
+                                    3722
+                                ]
+                            },
+                            {
+                                "_id": "67183b1e97027200079771d3",
+                                "recvTime": "2024-10-22T23:53:54.383Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    6,
+                                    3604
+                                ]
+                            },
+                            {
+                                "_id": "67183b1e97027200079771d4",
+                                "recvTime": "2024-10-22T23:53:54.734Z",
+                                "attrName": "lap",
+                                "attrType": "String",
+                                "attrValue": [
+                                    7,
+                                    3577
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "id": "urn:ngsi-ld:TRV:027",
+                "isPattern": false,
+                "type": "TrackVision"
+            },
+            "statusCode": {
+                "code": "200",
+                "reasonPhrase": "OK"
+            }
+        }
+    ]
+}
